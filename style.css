@@ -1,0 +1,16 @@
+#gridcontainer {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.cell {
+    box-sizing: border-box;
+    border: 1px solid rgb(41, 41, 41);
+    /*background: whitesmoke;*/
+}
+
+/*
+.cell:hover {
+    background-color: orangered;   
+}
+*/
