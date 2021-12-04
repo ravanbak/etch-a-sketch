@@ -1,19 +1,26 @@
 body {
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
     margin: 0;
-    background: whitesmoke;
+    background: rgb(240, 240, 240);
+}
+
+#header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 #gridcontainer {
     display: flex;
     flex-wrap: wrap;
-    margin: 20px;
     padding: 0;
+    background: rgb(254, 254, 255);
 }
 
 .cell {
     margin: 0;
     box-sizing: border-box;
-    border: 1px solid rgba(41, 41, 41, 0.06);
+    border: 1px solid rgba(41, 41, 41, 1.06);
 }
 
 /*
