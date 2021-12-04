@@ -5,7 +5,7 @@
 
 .cell {
     box-sizing: border-box;
-    border: 1px solid rgb(41, 41, 41);
+    border: 1px solid rgba(41, 41, 41, 0.1);
     /*background: whitesmoke;*/
 }
 

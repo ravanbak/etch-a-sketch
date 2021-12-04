@@ -21,8 +21,10 @@ function createGrid(gridSize) {
             let div = document.createElement('div');
             div.style.width = cellSize + 'px';
             div.style.height = cellSize + 'px';
+            div.style.backgroundColor = 'rgb(255, 255, 255, 0)';
             div.classList.add('cell');
             div.addEventListener('mouseover', (e) => updateCell(e));
+            div.addEventListener('mousedown', (e) => updateCell(e));
             container.appendChild(div);
         }
     }
@@ -32,6 +34,16 @@ function createGrid(gridSize) {
 function updateCell(e) {
     let div = e.target;
 
+    let color = div.style.backgroundColor;
+    let [r, g, b, a] = color.replace(/[^\d,.]/g, '').split(',');
+
+    a = Math.min(255, parseFloat(a) + 1/9);// 0.1111111111);
+    //div.style.backgroundColor = `rgb(${r}, ${g}, ${b}, ${a})`;
+    div.style.backgroundColor = `rgb(0, 0, 0, ${a})`;
+
+    //if (e.buttons === 1) div.style.backgroundColor = 'orangered';
+
+    /*
     if (e.buttons === 1) {
         // left button
         div.style.backgroundColor = 'white';
@@ -39,6 +51,7 @@ function updateCell(e) {
     else {
         div.style.backgroundColor = 'orangered';
     }
+    */
 }
 
 function resetGrid() {
