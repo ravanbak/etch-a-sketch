@@ -1,3 +1,4 @@
+const MIN_WIDTH_PX = 450;
 const GRID_SIZE_DEFAULT = 25;
 const BUTTON_HEIGHT_PX = 33;
 const MARGIN_PX = 20;
@@ -12,11 +13,16 @@ const container = document.querySelector('#gridcontainer');
 init();
 
 function init() {
+    let borderColor = 'rgba(48, 213, 200, 0.33)';
+
+    container.style.minWidth = `${MIN_WIDTH_PX}px`;
     container.style.margin = MARGIN_PX + 'px';
-    container.style.border = 'rgb(0, 200, 255, 0.5) ' + GRID_BORDER_PX + 'px solid';
-    container.style.borderRadius = '10px';
-    container.style.boxShadow = '0px 0px 20px rgba(0, 200, 255, 0.5)';
+    container.style.border = `${borderColor} ${GRID_BORDER_PX}px solid`;
+    container.style.borderRadius = '8px';
+    container.style.boxShadow = `0px 0px 20px ${borderColor}`;
+    
     header.style.margin = MARGIN_PX + 'px';
+    header.style.minWidth = `${MIN_WIDTH_PX}px`;
 
     addHeaderElements();
     createGrid(gridSize);
@@ -29,8 +35,13 @@ function init() {
 function addHeaderElements() {
     let h = document.createElement('h1');
     h.textContent = 'Etch-a-Sketch'
-    h.style.margin = 0;
+    h.style.margin = '0 auto 0 0';
     header.appendChild(h);
+
+    let p = document.createElement('p');
+    p.innerHTML = "hover to draw;<br>hold <strong><kbd>shift</kbd></strong> to erase;<br>hold <strong><kbd>ctrl</kbd></strong> to float";
+    p.style.padding = '0 10px';
+    header.appendChild(p);
 
     let b = document.createElement('button');
     b.textContent = 'Change Grid Size';
@@ -54,7 +65,15 @@ function getCellSizePx() {
 }
 
 function getGridSizePx() {
-    return Math.min(window.innerWidth - MARGIN_PX * 2 - 20, window.innerHeight - BUTTON_HEIGHT_PX - 60);
+    let headerHeight = parseInt(header.offsetHeight);
+
+    let size = Math.min(window.innerWidth - MARGIN_PX * 2 - 20, 
+                        window.innerHeight - MARGIN_PX * 2 - BUTTON_HEIGHT_PX - headerHeight - 60);
+
+    if (size < MIN_WIDTH_PX) size = MIN_WIDTH_PX;
+    
+    return size;
+
 }
 
 function createGrid(size) {
@@ -99,7 +118,7 @@ function resizeGrid() {
 
 function updateCell(e) {
 
-    //e.preventDefault();
+    e.preventDefault(); // prevent mouse drag-drop
 
     if (e.ctrlKey) return;
 
