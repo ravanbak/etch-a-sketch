@@ -158,6 +158,8 @@ function clearGrid() {
 function changeGridSize() {
     gridSize = parseInt(prompt('Please enter the number of cells per side (max 100):', gridSize));
     gridSize = Math.min(gridSize, 100);
+ 
+    if (!gridSize) gridSize = GRID_SIZE_DEFAULT;
     
     clearGrid();
 }
