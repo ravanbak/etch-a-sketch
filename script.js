@@ -8,56 +8,85 @@ let gridWidthPx = 960;
 let gridSize = GRID_SIZE_DEFAULT;
 
 const header = document.querySelector('#header');
-const container = document.querySelector('#gridcontainer');
+const controls = document.querySelector('#controls');
+const gridContainer = document.querySelector('#gridcontainer');
+let rangeOutput; // output for grid size slider
 
 init();
 
 function init() {
     let borderColor = 'rgba(48, 213, 200, 0.33)';
 
-    container.style.minWidth = `${MIN_WIDTH_PX}px`;
-    container.style.margin = MARGIN_PX + 'px';
-    container.style.border = `${borderColor} ${GRID_BORDER_PX}px solid`;
-    container.style.borderRadius = '8px';
-    container.style.boxShadow = `0px 0px 20px ${borderColor}`;
+    gridContainer.style.minWidth = `${MIN_WIDTH_PX}px`;
+    gridContainer.style.margin = MARGIN_PX + 'px';
+    gridContainer.style.border = `${borderColor} ${GRID_BORDER_PX}px solid`;
+    gridContainer.style.borderRadius = '8px';
+    gridContainer.style.boxShadow = `0px 0px 20px ${borderColor}`;
     
-    header.style.margin = MARGIN_PX + 'px';
+    header.style.marginTop = '0'; // MARGIN_PX + 'px';
+    header.style.marginBottom = '0';
     header.style.minWidth = `${MIN_WIDTH_PX}px`;
+    //header.style.border = 'solid black 1px';
+
+    controls.style.marginTop = '0'; //MARGIN_PX + 'px';
+    controls.style.minWidth = `${MIN_WIDTH_PX}px`;
+    //controls.style.border = 'solid black 1px';
 
     addHeaderElements();
+    addControls();
     createGrid(gridSize);
     
-    window.onresize = resizeGrid;
+    window.onresize = resizeWindow;
 
-    resizeGrid();
+    resizeWindow();
 }
 
 function addHeaderElements() {
     let h = document.createElement('h1');
-    h.textContent = 'Etch-a-Sketch'
-    h.style.margin = '0 auto 0 0';
+    h.textContent = 'Grid Sketch'
+    h.style.margin = '10px 0 0'; // auto 0 0';
     header.appendChild(h);
 
     let p = document.createElement('p');
-    p.innerHTML = "hover to draw;<br>hold <strong><kbd>shift</kbd></strong> to erase;<br>hold <strong><kbd>ctrl</kbd></strong> to float";
-    p.style.padding = '0 10px';
+    p.innerHTML = "hover to draw; hold <strong><kbd>shift</kbd></strong> to erase; hold <strong><kbd>ctrl</kbd></strong> to float";
+    p.style.padding = '0';
+    p.style.margin = '10px';
     header.appendChild(p);
+}
 
-    let b = document.createElement('button');
-    b.textContent = 'Change Grid Size';
-    b.style.marginLeft = 'auto';
-    b.style.height = '33px';
-    b.style.boxShadow = '0px 0px 20px rgba(0, 0, 30, 0.33)';
-    b.addEventListener('click', changeGridSize);
-    header.appendChild(b);   
+function addControls() {
+    let rangeContainer = document.createElement('div');
+    rangeContainer.style.display = 'flex';
+
+    let rangeLabel = document.createElement('label');
+    rangeLabel.setAttribute('for', 'gridsize');
+    rangeLabel.textContent = 'grid size';
+    rangeContainer.appendChild(rangeLabel);
+
+    let range = document.createElement('input');
+    range.setAttribute('type', 'range');
+    range.setAttribute('name', 'gridsize');
+    range.setAttribute('min', '1');
+    range.setAttribute('max', '100');
+    range.setAttribute('value', gridSize);
+    range.addEventListener('input', (e) => { rangeOutput.textContent = e.target.value; });
+    range.addEventListener('mouseup', changeGridSize);
+    rangeContainer.appendChild(range);
+
+    rangeOutput = document.createElement('output');
+    rangeOutput.setAttribute('for', 'gridsize');
+    rangeOutput.textContent = gridSize;
+    rangeContainer.appendChild(rangeOutput);
+    
+    controls.appendChild(rangeContainer);
 
     b = document.createElement('button');
-    b.textContent = 'Clear Grid';
+    b.textContent = 'Clear';
     b.style.marginLeft = '10px';
     b.style.height = '33px';
     b.style.boxShadow = '0px 0px 20px rgba(0, 0, 30, 0.33)';
     b.addEventListener('click', clearGrid);
-    header.appendChild(b);   
+    controls.appendChild(b);   
 }
 
 function getCellSizePx() {
@@ -79,7 +108,7 @@ function getGridSizePx() {
 function createGrid(size) {
     
     gridWidthPx = getGridSizePx(); 
-    container.style.width = gridWidthPx + 'px';
+    gridContainer.style.width = gridWidthPx + 'px';
 
     let cellSize = getCellSizePx();
 
@@ -94,21 +123,22 @@ function createGrid(size) {
             div.addEventListener('mousedown', updateCell);
             //div.addEventListener('touchstart', updateCell);
             //div.addEventListener('touchmove', updateCell);
-            container.appendChild(div);
+            gridContainer.appendChild(div);
         }
     }
 
 }
 
-function resizeGrid() {
+function resizeWindow() {
 
     gridWidthPx = getGridSizePx();
-    container.style.width = gridWidthPx + 'px';
+    gridContainer.style.width = gridWidthPx + 'px';
     header.style.width = gridWidthPx + GRID_BORDER_PX * 2 + 'px';
+    controls.style.width = gridWidthPx + GRID_BORDER_PX * 2 + 'px';
 
     let cellSize = getCellSizePx();
 
-    let divNodes = container.querySelectorAll('div');
+    let divNodes = gridContainer.querySelectorAll('div');
     for (let div of divNodes) {
             div.style.width = cellSize + 'px';
             div.style.height = cellSize + 'px';       
@@ -149,17 +179,19 @@ function updateCell(e) {
 }
 
 function clearGrid() {
-    while (container.firstChild) {
-        container.removeChild(container.firstChild);
+    while (gridContainer.firstChild) {
+        gridContainer.removeChild(gridContainer.firstChild);
     }
     createGrid(gridSize);
 }
 
-function changeGridSize() {
-    gridSize = parseInt(prompt('Please enter the number of cells per side (max 100):', gridSize));
+function changeGridSize(e) {
+    gridSize = +e.target.value; // parseInt(prompt('Please enter the number of cells per side (max 100):', gridSize));
     gridSize = Math.min(gridSize, 100);
  
+    rangeOutput.textContent = gridSize;
+
     if (!gridSize) gridSize = GRID_SIZE_DEFAULT;
-    
+
     clearGrid();
 }
