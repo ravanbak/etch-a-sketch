@@ -1,9 +1,9 @@
-const MIN_WIDTH_PX = 450;
 const GRID_SIZE_DEFAULT = 25;
 const BUTTON_HEIGHT_PX = 33;
-const MARGIN_PX = 20;
-const GRID_BORDER_PX = 10;
-
+const GRID_BORDER_PX = 0;
+const GRID_BORDER_COLOR = 'rgb(100, 100, 100, 1)';
+const GRID_BORDER_RADIUS = 10;
+const GRID_MARGIN_PX = 16;
 const DEFAULT_PEN_COLOR = 'rgb(100, 100, 100)';
 
 let gridWidthPx = 960;
@@ -27,31 +27,20 @@ let penColor = colorArrayFromRGBString(DEFAULT_PEN_COLOR);
 init();
 
 function init() {
-    let borderColor = 'rgba(48, 213, 200, 0.33)';
-
-    gridContainer.style.minWidth = `${MIN_WIDTH_PX}px`;
-    gridContainer.style.margin = MARGIN_PX + 'px';
-    gridContainer.style.border = `${borderColor} ${GRID_BORDER_PX}px solid`;
-    gridContainer.style.borderRadius = '8px';
-    gridContainer.style.boxShadow = `0px 0px 20px ${borderColor}`;
+    gridContainer.style.margin = GRID_MARGIN_PX + 'px';
+    gridContainer.style.border = `${GRID_BORDER_COLOR} ${GRID_BORDER_PX}px solid`;
+    gridContainer.style.borderRadius = GRID_BORDER_RADIUS + 'px';
+    gridContainer.style.boxShadow = `0px 0px 20px ${GRID_BORDER_COLOR}`;
     
     // prevent context menu on right-click
     gridContainer.addEventListener('contextmenu', (e) => { e.preventDefault() });
 
-    header.style.marginTop = '0'; // MARGIN_PX + 'px';
-    header.style.marginBottom = '0';
-    header.style.minWidth = `${MIN_WIDTH_PX}px`;
-
-    controls.style.marginTop = '0'; //MARGIN_PX + 'px';
-    controls.style.minWidth = `${MIN_WIDTH_PX}px`;
-
     addHeaderElements();
     addControls();
     createGrid(gridSize);
+    resizeWindow();
     
     window.onresize = resizeWindow;
-
-    resizeWindow();
 }
 
 function addHeaderElements() {
@@ -72,63 +61,72 @@ function addControls() {
     const colorWheelSizePx = 40;
 
     colorContainer = document.createElement('div');
-    colorContainer.style.display = 'flex';
-    colorContainer.style.alignItems = 'center';
-    colorContainer.style.height = colorWheelSizePx + 'px';
     controls.appendChild(colorContainer);
 
+    colorContainer.style.id = 'colorcontainer';
+    colorContainer.style.display = 'flex';
+    colorContainer.style.alignItems = 'center';
+        
     colorImg = document.createElement('img');
-    colorImg.setAttribute('src', 'color-spectrum.png');
-    colorImg.style.width = colorWheelSizePx + 'px';
-    colorImg.style.borderRadius = '50%';
-    colorImg.style.marginRight = '4px';
-    colorImg.style.position = 'absolute';
-    colorImg.style.backgroundColor = 'transparent'; // DEFAULT_PEN_COLOR;
-    //colorImg.style.pointerEvents = 'none';
-    colorImg.addEventListener('click', colorWheelClick);
     colorContainer.appendChild(colorImg);
 
+    colorImg.setAttribute('src', 'color-spectrum.png');
+    colorImg.style.width = colorWheelSizePx + 'px';
+    colorImg.style.height = colorWheelSizePx + 'px';
+    colorImg.style.borderRadius = '50%';
+    colorImg.style.position = 'absolute';
+    colorImg.style.backgroundColor = 'transparent';
+    //colorImg.style.pointerEvents = 'none';
+    colorImg.addEventListener('click', colorWheelClick);
+    
+
     colorWheelBackground = document.createElement('div');
+    colorContainer.appendChild(colorWheelBackground);
+
     colorWheelBackground.style.width = colorWheelSizePx - 4 + 'px';
     colorWheelBackground.style.height = colorWheelSizePx - 4 + 'px';
     colorWheelBackground.style.margin = '1px';
     colorWheelBackground.style.borderRadius = '50%';
     colorWheelBackground.style.backgroundColor = DEFAULT_PEN_COLOR;
-    colorContainer.appendChild(colorWheelBackground);
-
+    
     colorPicker = document.createElement('input');
+    colorContainer.appendChild(colorPicker);
+
     colorPicker.setAttribute('type', 'color');
     colorPicker.setAttribute('name', 'colorpicker');
     colorPicker.setAttribute('value', hexFromColorArray(colorArrayFromRGBString(DEFAULT_PEN_COLOR)));
     colorPicker.style.visibility = 'hidden';
     colorPicker.style.width = colorWheelSizePx + 'px';
     colorPicker.style.height = colorWheelSizePx + 'px';
+    colorPicker.style.position = 'absolute';
     colorPicker.addEventListener('change', changeColor);
     colorPicker.addEventListener('input', changeColor);
-    colorContainer.appendChild(colorPicker);
-
+    
     let rangeContainer = document.createElement('div');
-    rangeContainer.style.display = 'flex';
-    rangeContainer.style.alignItems = 'center';
     controls.appendChild(rangeContainer);
 
+    rangeContainer.style.display = 'flex';
+    rangeContainer.style.alignItems = 'center';
+    
     let rangeLabel = document.createElement('label');
+    rangeContainer.appendChild(rangeLabel);
+
     rangeLabel.setAttribute('for', 'gridsize');
     rangeLabel.style.marginRight = '4px';
     rangeLabel.textContent = 'grid size';
-    rangeContainer.appendChild(rangeLabel);
-
+    
     let range = document.createElement('input');
+    rangeContainer.appendChild(range);
+
     range.setAttribute('type', 'range');
     range.setAttribute('name', 'gridsize');
     range.setAttribute('min', '1');
     range.setAttribute('max', '100');
     range.setAttribute('value', gridSize);
-    range.style.width = '150px';
-    //range.style.height = '30px';
+    range.style.margin = 'auto';
     range.addEventListener('input', (e) => { rangeOutput.textContent = e.target.value; });
     range.addEventListener('mouseup', changeGridSize);
-    rangeContainer.appendChild(range);
+    range.addEventListener('touchend', changeGridSize);
 
     rangeOutput = document.createElement('output');
     rangeOutput.setAttribute('for', 'gridsize');
@@ -141,11 +139,12 @@ function addControls() {
     b.style.height = '40px';
     b.style.width = '50px';
     b.style.backgroundColor = '';
-    b.style.boxShadow = '0px 0px 20px rgba(0, 0, 30, 0.33)';
-    b.style.border = '2px solid rgba(48, 213, 200, 0.33)';
+    b.style.boxShadow = '0px 0px 4px ' + GRID_BORDER_COLOR; // rgba(0, 0, 30, 0.33)';
+    b.style.border = '1px solid ' + GRID_BORDER_COLOR; // rgba(48, 213, 200, 0.33)';
     b.style.borderRadius = '10px';
     b.addEventListener('click', clearGrid);
     controls.appendChild(b);   
+
 }
 
 function colorWheelClick(e) {
@@ -157,53 +156,71 @@ function getCellSizePx() {
 }
 
 function getGridSizePx() {
-    let headerHeight = parseInt(header.offsetHeight);
+    let headerHeight = header.offsetHeight;
+    let controlsHeight = controls.offsetHeight;
 
-    let size = Math.min(window.innerWidth - MARGIN_PX * 2 - 20, 
-                        window.innerHeight - MARGIN_PX * 2 - BUTTON_HEIGHT_PX - headerHeight - 60);
+    let size = Math.min(window.innerWidth, 
+                        window.innerHeight - headerHeight - controlsHeight);
 
-    if (size < MIN_WIDTH_PX) size = MIN_WIDTH_PX;
-    
-    return size;
-
+    return size - GRID_MARGIN_PX * 2 - GRID_BORDER_PX * 2;
 }
 
 function createGrid(size) {
-    
     gridWidthPx = getGridSizePx(); 
     gridContainer.style.width = gridWidthPx + 'px';
 
     let cellSize = getCellSizePx();
 
+    const borderRadius = GRID_BORDER_RADIUS + 'px';
+    
     for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
             let div = document.createElement('div');
             div.style.width = cellSize + 'px';
             div.style.height = cellSize + 'px';
+            //div.style.border = 'none';
             div.style.backgroundColor = 'rgb(255, 255, 255, 0)';
             div.classList.add('cell');
             div.addEventListener('mouseover', updateCell);
             div.addEventListener('mousedown', updateCell);
             
+            // round outer corners of corner cells
+            // do not use 'else' statements so that all corners will be
+            // rounded when grid size = 1
+            if (i == 0) {
+                if (j === 0) {
+                    div.style.borderTopLeftRadius = borderRadius;
+                }
+                if (j === size - 1) {
+                    div.style.borderTopRightRadius = borderRadius;
+                }
+            }
+            if (i === size - 1) {
+                if (j === 0) {
+                    div.style.borderBottomLeftRadius = borderRadius;
+                }
+                if (j === size - 1) {
+                    div.style.borderBottomRightRadius = borderRadius;
+                }
+            }
+
             gridContainer.appendChild(div);
         }
     }
-
 }
 
 function resizeWindow() {
 
     gridWidthPx = getGridSizePx();
     gridContainer.style.width = gridWidthPx + 'px';
-    header.style.width = gridWidthPx + GRID_BORDER_PX * 2 + 'px';
     controls.style.width = gridWidthPx + GRID_BORDER_PX * 2 + 'px';
 
     let cellSize = getCellSizePx();
 
     let divNodes = gridContainer.querySelectorAll('div');
     for (let div of divNodes) {
-            div.style.width = cellSize + 'px';
-            div.style.height = cellSize + 'px';       
+        div.style.width = cellSize + 'px';
+        div.style.height = cellSize + 'px';       
     }
 
 }
@@ -230,6 +247,7 @@ function changeColor(e) {
     penColor = colorArrayFromHex(e.target.value);
     colorWheelBackground.style.backgroundColor = e.target.value;
 
+    //gridContainer.style.boxShadow = `0px 0px 20px ${e.target.value}`;
 }
 
 function colorArrayFromRGBString(color) {

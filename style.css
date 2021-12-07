@@ -3,8 +3,8 @@ body {
     flex-direction: column;
     align-items: center;
     font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-    margin: 0;
     background: rgb(240, 240, 240);
+    margin: 0;
 }
 
 #header {
@@ -12,11 +12,12 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    /*margin: auto;*/
 }
 
 #controls {
     display: flex;
-    flex-grow: 1;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
 }
@@ -24,7 +25,10 @@ body {
 #gridcontainer {
     display: flex;
     flex-wrap: wrap;
-    padding: 0;
+    justify-content: center;
+    align-items: center;
+    /*margin: auto;*/
+    /*box-sizing: border-box;*/
     background: rgb(254, 254, 255);
 }
 
@@ -36,7 +40,7 @@ body {
 
 button:hover {
     color: whitesmoke;
-    background: rgb(255, 70, 55);
+    background: rgb(255, 0, 0);
 }
 
 /*
