@@ -5,9 +5,12 @@ const GRID_BORDER_COLOR = 'rgb(100, 100, 100, 1)';
 const GRID_BORDER_RADIUS = 10;
 const GRID_MARGIN_PX = 16;
 const DEFAULT_PEN_COLOR = 'rgb(100, 100, 100)';
+const HIGHLIGHT_COLOR = 'rgb(0, 190, 255, 0.2)';
 
 let gridWidthPx = 960;
 let gridSize = GRID_SIZE_DEFAULT;
+let rangeLabel;
+let rangeOutput; // output for grid size slider
 
 let hoverDraw = false;
 
@@ -19,8 +22,6 @@ let colorContainer;
 let colorWheelBackground;
 let colorImg;
 let colorPicker;
-
-let rangeOutput; // output for grid size slider
 
 let penColor = colorArrayFromRGBString(DEFAULT_PEN_COLOR);
 
@@ -79,7 +80,6 @@ function addControls() {
     //colorImg.style.pointerEvents = 'none';
     colorImg.addEventListener('click', colorWheelClick);
     
-
     colorWheelBackground = document.createElement('div');
     colorContainer.appendChild(colorWheelBackground);
 
@@ -106,15 +106,20 @@ function addControls() {
     controls.appendChild(rangeContainer);
 
     rangeContainer.style.display = 'flex';
+    rangeContainer.style.flex = '1';
     rangeContainer.style.alignItems = 'center';
+    rangeContainer.style.width = '100%';
+    rangeContainer.style.margin = '0 5%';
     
-    let rangeLabel = document.createElement('label');
+    rangeLabel = document.createElement('label');
     rangeContainer.appendChild(rangeLabel);
 
     rangeLabel.setAttribute('for', 'gridsize');
-    rangeLabel.style.marginRight = '4px';
+    rangeLabel.style.minWidth = '70px';
+    rangeLabel.style.textAlign = 'center';
+    rangeLabel.style.borderRadius = '10px';
     rangeLabel.textContent = 'grid size';
-    
+
     let range = document.createElement('input');
     rangeContainer.appendChild(range);
 
@@ -123,14 +128,19 @@ function addControls() {
     range.setAttribute('min', '1');
     range.setAttribute('max', '100');
     range.setAttribute('value', gridSize);
-    range.style.margin = 'auto';
-    range.addEventListener('input', (e) => { rangeOutput.textContent = e.target.value; });
+    range.style.width = '100%';
+    range.style.margin = '0 10px';
+    range.addEventListener('input', moveGridSizeSlider); 
+    range.addEventListener('mousedown', moveGridSizeSlider); 
     range.addEventListener('mouseup', changeGridSize);
     range.addEventListener('touchend', changeGridSize);
 
     rangeOutput = document.createElement('output');
     rangeOutput.setAttribute('for', 'gridsize');
     rangeOutput.textContent = gridSize;
+    rangeOutput.style.borderRadius = '50%';
+    rangeOutput.style.minWidth = '26px';
+    rangeOutput.style.textAlign = 'center';
     rangeContainer.appendChild(rangeOutput);
 
     b = document.createElement('button');
@@ -211,6 +221,8 @@ function createGrid(size) {
 
 function resizeWindow() {
 
+    if (getGridSizePx === gridWidthPx) return;
+
     gridWidthPx = getGridSizePx();
     gridContainer.style.width = gridWidthPx + 'px';
     controls.style.width = gridWidthPx + GRID_BORDER_PX * 2 + 'px';
@@ -283,11 +295,25 @@ function clearGrid() {
     createGrid(gridSize);
 }
 
+function moveGridSizeSlider(e) {
+    rangeOutput.textContent = e.target.value;
+    rangeOutput.style.backgroundColor = HIGHLIGHT_COLOR
+    rangeOutput.style.boxShadow = '0px 0px 16px ' + HIGHLIGHT_COLOR;
+
+    rangeLabel.style.backgroundColor = HIGHLIGHT_COLOR
+    rangeLabel.style.boxShadow = '0px 0px 16px ' + HIGHLIGHT_COLOR;
+}
+
 function changeGridSize(e) {
     gridSize = +e.target.value; // parseInt(prompt('Please enter the number of cells per side (max 100):', gridSize));
     gridSize = Math.min(gridSize, 100);
  
     rangeOutput.textContent = gridSize;
+    rangeOutput.style.backgroundColor = 'transparent';
+    rangeOutput.style.boxShadow = 'none';
+
+    rangeLabel.style.backgroundColor = 'transparent';
+    rangeLabel.style.boxShadow = 'none';
 
     if (!gridSize) gridSize = GRID_SIZE_DEFAULT;
 
