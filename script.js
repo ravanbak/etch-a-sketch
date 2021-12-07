@@ -99,8 +99,8 @@ function addControls() {
     colorPicker.style.width = colorWheelSizePx + 'px';
     colorPicker.style.height = colorWheelSizePx + 'px';
     colorPicker.style.position = 'absolute';
-    colorPicker.addEventListener('change', changeColor);
-    colorPicker.addEventListener('input', changeColor);
+    colorPicker.addEventListener('change', changePenColor);
+    colorPicker.addEventListener('input', changePenColor);
     
     let rangeContainer = document.createElement('div');
     controls.appendChild(rangeContainer);
@@ -242,7 +242,7 @@ function hexFromColorArray(color) {
     return colorHex;
 }
 
-function changeColor(e) {
+function changePenColor(e) {
 
     penColor = colorArrayFromHex(e.target.value);
     colorWheelBackground.style.backgroundColor = e.target.value;

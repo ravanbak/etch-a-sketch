@@ -20,6 +20,7 @@ body {
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
+    min-width: 320px;
 }
 
 #gridcontainer {
