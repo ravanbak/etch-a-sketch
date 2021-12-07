@@ -46,7 +46,7 @@ function init() {
 
 function addHeaderElements() {
     let h = document.createElement('h1');
-    h.textContent = 'Sketch Grid'
+    h.textContent = 'Sketchgrid'
     h.style.margin = '10px 0 0'; // auto 0 0';
     header.appendChild(h);
 
