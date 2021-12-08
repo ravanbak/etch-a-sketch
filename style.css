@@ -21,6 +21,7 @@ body {
     justify-content: space-between;
     align-items: center;
     min-width: 320px;
+    
 }
 
 #gridcontainer {
@@ -33,6 +34,11 @@ body {
     background: rgb(254, 254, 255);
 }
 
+
+img:hover {
+    box-shadow: 0px 0px 16px rgb(0, 0, 0, 0.5);
+}
+
 .cell {
     margin: 0;
     box-sizing: border-box;
@@ -42,6 +48,7 @@ body {
 button:hover {
     color: whitesmoke;
     background: rgb(255, 0, 0);
+    box-shadow: 0px 0px 20px rgb(0, 0, 0);
 }
 
 /*

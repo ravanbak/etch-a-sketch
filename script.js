@@ -12,7 +12,7 @@ let gridSize = GRID_SIZE_DEFAULT;
 let rangeLabel;
 let rangeOutput; // output for grid size slider
 
-let hoverDraw = false;
+let brushOpaque = false;
 
 const header = document.querySelector('#header');
 const controls = document.querySelector('#controls');
@@ -67,7 +67,7 @@ function addControls() {
     colorContainer.style.id = 'colorcontainer';
     colorContainer.style.display = 'flex';
     colorContainer.style.alignItems = 'center';
-        
+    colorContainer.style.minHeight = colorWheelSizePx + 10 + 'px';
     colorImg = document.createElement('img');
     colorContainer.appendChild(colorImg);
 
@@ -143,6 +143,11 @@ function addControls() {
     rangeOutput.style.textAlign = 'center';
     rangeContainer.appendChild(rangeOutput);
 
+    let brushOpacity = document.createElement('input');
+    brushOpacity.setAttribute('type', 'checkbox');
+    brushOpacity.addEventListener('click', (e) => brushOpaque = e.target.value );
+    controls.appendChild(brushOpacity);
+
     b = document.createElement('button');
     b.textContent = 'clear';
     b.style.marginLeft = '10px';
@@ -166,11 +171,9 @@ function getCellSizePx() {
 }
 
 function getGridSizePx() {
-    let headerHeight = header.offsetHeight;
-    let controlsHeight = controls.offsetHeight;
-
     let size = Math.min(window.innerWidth, 
-                        window.innerHeight - headerHeight - controlsHeight);
+                        window.innerHeight - header.offsetHeight 
+                                           - controls.offsetHeight);
 
     return size - GRID_MARGIN_PX * 2 - GRID_BORDER_PX * 2;
 }
@@ -255,11 +258,8 @@ function hexFromColorArray(color) {
 }
 
 function changePenColor(e) {
-
     penColor = colorArrayFromHex(e.target.value);
     colorWheelBackground.style.backgroundColor = e.target.value;
-
-    //gridContainer.style.boxShadow = `0px 0px 20px ${e.target.value}`;
 }
 
 function colorArrayFromRGBString(color) {
@@ -280,10 +280,15 @@ function updateCell(e) {
 
     let pen = (e.buttons === 2) ? [255, 255, 255] : penColor;
 
-    const divWeight = 3;
-    const penWeight = 1;
-    const totalWeight = divWeight + penWeight;
-    divColor = divColor.map((e, i) => clampColorVal(parseInt((+e * divWeight + parseInt(+pen[i] * penWeight)) / totalWeight)));
+    if (brushOpaque) {
+        divColor = pen;
+    }
+    else {
+        const divWeight = 3;
+        const penWeight = 1;
+        const totalWeight = divWeight + penWeight;
+        divColor = divColor.map((e, i) => clampColorVal(parseInt((+e * divWeight + parseInt(+pen[i] * penWeight)) / totalWeight)));
+    }
 
     div.style.backgroundColor = `rgb(${divColor[0]}, ${divColor[1]}, ${divColor[2]}, 1)`;
 }
@@ -304,18 +309,20 @@ function moveGridSizeSlider(e) {
     rangeLabel.style.boxShadow = '0px 0px 16px ' + HIGHLIGHT_COLOR;
 }
 
-function changeGridSize(e) {
-    gridSize = +e.target.value; // parseInt(prompt('Please enter the number of cells per side (max 100):', gridSize));
-    gridSize = Math.min(gridSize, 100);
- 
-    rangeOutput.textContent = gridSize;
+function finishMovingGridSizeSlider() {
     rangeOutput.style.backgroundColor = 'transparent';
     rangeOutput.style.boxShadow = 'none';
 
     rangeLabel.style.backgroundColor = 'transparent';
     rangeLabel.style.boxShadow = 'none';
+}
 
-    if (!gridSize) gridSize = GRID_SIZE_DEFAULT;
+function changeGridSize(e) {
+    if (gridSize !== parseInt(e.target.value)) {
+        gridSize = parseInt(e.target.value)
+        rangeOutput.textContent = gridSize;
+        clearGrid();
+    }
 
-    clearGrid();
+    finishMovingGridSizeSlider();
 }
