@@ -1,6 +1,5 @@
 const GRID_SIZE_DEFAULT = 25;
 const GRID_SIZE_MIN_PX = 200;
-const BUTTON_HEIGHT_PX = 33;
 const GRID_BORDER_PX = 0;
 const GRID_BORDER_COLOR = 'rgb(100, 100, 100, 1)';
 const GRID_BORDER_RADIUS = 10;
@@ -11,20 +10,12 @@ const HIGHLIGHT_COLOR = 'rgb(0, 190, 255, 0.2)';
 
 let gridWidthPx = 960;
 let gridSize = GRID_SIZE_DEFAULT;
-let rangeOutput; // output for grid size slider
 
 let brushOpaque = false;
 
-const header = document.querySelector('#header');
-const title = document.querySelector('#title');
 const controls1 = document.querySelector('#controls1');
 const controls2 = document.querySelector('#controls2');
 const gridContainer = document.querySelector('#gridcontainer');
-const footer = document.querySelector('#footer');
-
-let colorWheelBackground;
-let colorImg;
-let colorinput;
 
 let penColor = colorArrayFromRGBString(DEFAULT_PEN_COLOR);
 
@@ -41,6 +32,7 @@ function init() {
     //gridContainer.addEventListener('touchstart', updateCell);
     //gridContainer.addEventListener('touchmove', updateCell);
 
+    const footer = document.querySelector('#footer');
     footer.style.margin = FOOTER_MARGIN_PX + 'px';
 
     addHeaderElements();
@@ -59,27 +51,27 @@ function addHeaderElements() {
 function addControls1() {
     const colorWheelSizePx = 40;
 
-    let colorContainer = controls1.querySelector('#colorcontainer');
+    const colorContainer = controls1.querySelector('#colorcontainer');
     colorContainer.style.minHeight = colorWheelSizePx + 10 + 'px';
-    colorImg = document.querySelector('#colorwheel');
-
+    
+    const colorImg = document.querySelector('#colorwheel');
     colorImg.style.width = colorWheelSizePx + 'px';
     colorImg.style.height = colorWheelSizePx + 'px';
     colorImg.addEventListener('click', colorWheelClick);
     
-    colorWheelBackground = document.querySelector('#colorwheelbackground');
+    const colorWheelBackground = document.querySelector('#colorwheelbackground');
     colorWheelBackground.style.width = colorWheelSizePx - 4 + 'px';
     colorWheelBackground.style.height = colorWheelSizePx - 4 + 'px';
     colorWheelBackground.style.backgroundColor = DEFAULT_PEN_COLOR;
     
-    colorinput = document.querySelector('#colorinput');
+    const colorinput = document.querySelector('#colorinput');
     colorinput.setAttribute('value', hexFromColorArray(colorArrayFromRGBString(DEFAULT_PEN_COLOR)));
     colorinput.style.width = colorWheelSizePx + 'px';
     colorinput.style.height = colorWheelSizePx + 'px';
     colorinput.addEventListener('change', changePenColor);
     colorinput.addEventListener('input', changePenColor);
     
-    let chkBrushOpacity = document.querySelector('#opacityinput');
+    const chkBrushOpacity = document.querySelector('#opacityinput');
     chkBrushOpacity.addEventListener('input', (e) => brushOpaque = e.target.checked);
 
     b = controls1.querySelector('#clearbutton');
@@ -90,18 +82,19 @@ function addControls1() {
 }
 
 function addControls2() {
-    let range = document.querySelector('#slidercontainer input');
+    const range = document.querySelector('#slidercontainer input');
     range.setAttribute('value', gridSize);
     range.addEventListener('input', moveGridSizeSlider); 
     range.addEventListener('mousedown', moveGridSizeSlider); 
     range.addEventListener('mouseup', changeGridSize);
     range.addEventListener('touchend', changeGridSize);
     
-    rangeOutput = document.querySelector('#slidercontainer output');
-    rangeOutput.textContent = gridSize;
+    const gridSizeOutput = document.querySelector('#slidercontainer output');
+    gridSizeOutput.textContent = gridSize;
 }
 
 function colorWheelClick(e) {
+    const colorinput = document.querySelector('#colorinput');
     colorinput.dispatchEvent(new e.constructor(e.type));
 }
 
@@ -110,11 +103,13 @@ function getCellSizePx() {
 }
 
 function getHeaderFooterTotalHeight() {
-    return header.offsetHeight + footer.offsetHeight + FOOTER_MARGIN_PX * 2; // + controls1.offsetHeight + controls2.offsetHeight;
+    const header = document.querySelector('#header');
+    const footer = document.querySelector('#footer');
+    return header.offsetHeight + footer.offsetHeight + FOOTER_MARGIN_PX * 2;
 }
 
 function getGridSizePx() {
-    let size = Math.min(window.innerWidth, window.innerHeight - getHeaderFooterTotalHeight());
+    const size = Math.min(window.innerWidth, window.innerHeight - getHeaderFooterTotalHeight());
 
     return Math.max(GRID_SIZE_MIN_PX, size - GRID_MARGIN_PX * 2 - GRID_BORDER_PX * 2 - 1);
 }
@@ -123,7 +118,7 @@ function createGrid(size) {
     gridWidthPx = getGridSizePx(); 
     gridContainer.style.width = gridWidthPx + 'px';
 
-    let cellSize = getCellSizePx();
+    const cellSize = getCellSizePx();
 
     const borderRadius = GRID_BORDER_RADIUS + 'px';
     
@@ -166,8 +161,6 @@ function createGrid(size) {
 
 function resizeWindow() {
 
-    if (getGridSizePx() === gridWidthPx) return;
-
     gridWidthPx = getGridSizePx();
     gridContainer.style.width = gridWidthPx + 'px';
     controls1.style.width = gridWidthPx + GRID_BORDER_PX * 2 + 'px';
@@ -178,12 +171,10 @@ function resizeWindow() {
         div.style.width = parseInt(gridWidthPx * 0.6) + 'px';
     }
 
-    let cellSize = getCellSizePx();
-
-    let divNodes = gridContainer.querySelectorAll('div');
-    for (let div of divNodes) {
-        div.style.width = cellSize + 'px';
-        div.style.height = cellSize + 'px';       
+    const cellSize = getCellSizePx() + 'px';
+    for (let div of gridContainer.querySelectorAll('div')) {
+        div.style.width = cellSize;
+        div.style.height = cellSize;       
     }
 
 }
@@ -198,15 +189,17 @@ function colorArrayFromHex(hex) {
 }
 
 function hexFromColorArray(color) {
-    let colorHex = '#' + colorComponentToHex(color[0]) +
-                         colorComponentToHex(color[1]) +
-                         colorComponentToHex(color[2]);
+    const colorHex = '#' + colorComponentToHex(color[0]) +
+                           colorComponentToHex(color[1]) +
+                           colorComponentToHex(color[2]);
 
     return colorHex;
 }
 
 function changePenColor(e) {
     penColor = colorArrayFromHex(e.target.value);
+
+    const colorWheelBackground = document.querySelector('#colorwheelbackground');
     colorWheelBackground.style.backgroundColor = e.target.value;
 }
 
@@ -223,11 +216,11 @@ function updateCell(e) {
 
     if (e.buttons < 1 || e.buttons > 2) return;
 
-    let div = e.target;
+    const div = e.target;
     //console.log(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
-    let divColor = div.style.backgroundColor.replace(/[^\d,.]/g, '').split(',');
+    const divColor = div.style.backgroundColor.replace(/[^\d,.]/g, '').split(',');
 
-    let pen = (e.buttons === 2) ? [255, 255, 255] : penColor;
+    const pen = (e.buttons === 2) ? [255, 255, 255] : penColor;
 
     if (brushOpaque) {
         divColor = pen;
@@ -250,20 +243,22 @@ function clearGrid() {
 }
 
 function moveGridSizeSlider(e) {
-    rangeOutput.textContent = e.target.value;
-    rangeOutput.style.backgroundColor = HIGHLIGHT_COLOR
-    rangeOutput.style.boxShadow = '0px 0px 16px ' + HIGHLIGHT_COLOR;
+    const gridSizeOutput = document.querySelector('#slidercontainer output');
+    gridSizeOutput.textContent = e.target.value;
+    gridSizeOutput.style.backgroundColor = HIGHLIGHT_COLOR
+    gridSizeOutput.style.boxShadow = '0px 0px 16px ' + HIGHLIGHT_COLOR;
 
-    let rangeLabel = document.querySelector('#slidercontainer label');
+    const rangeLabel = document.querySelector('#slidercontainer label');
     rangeLabel.style.backgroundColor = HIGHLIGHT_COLOR
     rangeLabel.style.boxShadow = '0px 0px 16px ' + HIGHLIGHT_COLOR;
 }
 
 function finishMovingGridSizeSlider() {
-    rangeOutput.style.backgroundColor = 'transparent';
-    rangeOutput.style.boxShadow = 'none';
+    const gridSizeOutput = document.querySelector('#slidercontainer output');
+    gridSizeOutput.style.backgroundColor = 'transparent';
+    gridSizeOutput.style.boxShadow = 'none';
 
-    let rangeLabel = document.querySelector('#slidercontainer label');
+    const rangeLabel = document.querySelector('#slidercontainer label');
     rangeLabel.style.backgroundColor = 'transparent';
     rangeLabel.style.boxShadow = 'none';
 }
@@ -271,7 +266,10 @@ function finishMovingGridSizeSlider() {
 function changeGridSize(e) {
     if (gridSize !== parseInt(e.target.value)) {
         gridSize = parseInt(e.target.value)
-        rangeOutput.textContent = gridSize;
+
+        const gridSizeOutput = document.querySelector('#slidercontainer output');
+        gridSizeOutput.textContent = gridSize;
+
         clearGrid();
     }
 
