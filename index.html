@@ -11,13 +11,39 @@
 </head>
 <body>
     <div id="header">
-        
+        <div id="title">
+            <h1>Sketchgrid</h1>
+            <p><kbd>mouse left</kbd> to draw; <kbd>mouse right</kbd> to erase</p>
+        </div>
+        <div class="hseparator"></div>
+        <div id="controls1">
+            <div id="colorcontainer">
+                <img id="colorwheel" src="color-spectrum.png">
+                <div id="colorwheelbackground"></div>
+                <input id="colorinput" type="color" name="colorinput">
+            </div>
+            <div class="vseparator"></div>
+            <div id="opacitycontainer">    
+                <label id="opacitylabel" for="opacityinput">opaque brush</label>
+                <input id="opacityinput" type="checkbox">
+            </div>
+            <div class="vseparator"></div>
+            <div>
+                <button id="clearbutton">clear</button>
+            </div>
+        </div>
+        <div class="hseparator"></div>
+        <div id="controls2">
+            <div id="slidercontainer">
+                <label for="gridsizeinput">grid size</label>
+                <input type="range" name="gridsizeinput" min="1" max="100">
+                <output for="gridsizeinput"></output>
+            </div>            
+        </div>
     </div>
-    <div id="controls">
-
-    </div>
-    <div id="gridcontainer">
-
+    <div id="gridcontainer"></div>
+    <div id="footer">
+        <div><span>&copy</span> 2021 David Ravanbakhsh</div>
     </div>
 </body>
 </html>

@@ -1,27 +1,30 @@
 const GRID_SIZE_DEFAULT = 25;
+const GRID_SIZE_MIN_PX = 200;
 const BUTTON_HEIGHT_PX = 33;
 const GRID_BORDER_PX = 0;
 const GRID_BORDER_COLOR = 'rgb(100, 100, 100, 1)';
 const GRID_BORDER_RADIUS = 10;
 const GRID_MARGIN_PX = 16;
+const FOOTER_MARGIN_PX = 16;
 const DEFAULT_PEN_COLOR = 'rgb(100, 100, 100)';
 const HIGHLIGHT_COLOR = 'rgb(0, 190, 255, 0.2)';
 
 let gridWidthPx = 960;
 let gridSize = GRID_SIZE_DEFAULT;
-let rangeLabel;
 let rangeOutput; // output for grid size slider
 
 let brushOpaque = false;
 
 const header = document.querySelector('#header');
-const controls = document.querySelector('#controls');
+const title = document.querySelector('#title');
+const controls1 = document.querySelector('#controls1');
+const controls2 = document.querySelector('#controls2');
 const gridContainer = document.querySelector('#gridcontainer');
+const footer = document.querySelector('#footer');
 
-let colorContainer;
 let colorWheelBackground;
 let colorImg;
-let colorPicker;
+let colorinput;
 
 let penColor = colorArrayFromRGBString(DEFAULT_PEN_COLOR);
 
@@ -35,147 +38,85 @@ function init() {
     
     // prevent context menu on right-click
     gridContainer.addEventListener('contextmenu', (e) => { e.preventDefault() });
+    //gridContainer.addEventListener('touchstart', updateCell);
+    //gridContainer.addEventListener('touchmove', updateCell);
+
+    footer.style.margin = FOOTER_MARGIN_PX + 'px';
 
     addHeaderElements();
-    addControls();
     createGrid(gridSize);
-    resizeWindow();
     
     window.onresize = resizeWindow;
+
+    resizeWindow();
 }
 
 function addHeaderElements() {
-    let h = document.createElement('h1');
-    h.textContent = 'Sketchgrid'
-    h.style.margin = '10px 0 0'; // auto 0 0';
-    header.appendChild(h);
-
-    let p = document.createElement('p');
-    p.innerHTML = "<kbd>mouse left</kbd> to draw; <kbd>mouse right</kbd> to erase";
-    p.style.padding = '0';
-    p.style.margin = '10px';
-    header.appendChild(p);
+    addControls1();
+    addControls2();
 }
 
-function addControls() {
-    
+function addControls1() {
     const colorWheelSizePx = 40;
 
-    colorContainer = document.createElement('div');
-    controls.appendChild(colorContainer);
-
-    colorContainer.style.id = 'colorcontainer';
-    colorContainer.style.display = 'flex';
-    colorContainer.style.alignItems = 'center';
+    let colorContainer = controls1.querySelector('#colorcontainer');
     colorContainer.style.minHeight = colorWheelSizePx + 10 + 'px';
-    colorImg = document.createElement('img');
-    colorContainer.appendChild(colorImg);
+    colorImg = document.querySelector('#colorwheel');
 
-    colorImg.setAttribute('src', 'color-spectrum.png');
     colorImg.style.width = colorWheelSizePx + 'px';
     colorImg.style.height = colorWheelSizePx + 'px';
-    colorImg.style.borderRadius = '50%';
-    colorImg.style.position = 'absolute';
-    colorImg.style.backgroundColor = 'transparent';
-    //colorImg.style.pointerEvents = 'none';
     colorImg.addEventListener('click', colorWheelClick);
     
-    colorWheelBackground = document.createElement('div');
-    colorContainer.appendChild(colorWheelBackground);
-
+    colorWheelBackground = document.querySelector('#colorwheelbackground');
     colorWheelBackground.style.width = colorWheelSizePx - 4 + 'px';
     colorWheelBackground.style.height = colorWheelSizePx - 4 + 'px';
-    colorWheelBackground.style.margin = '1px';
-    colorWheelBackground.style.borderRadius = '50%';
     colorWheelBackground.style.backgroundColor = DEFAULT_PEN_COLOR;
     
-    colorPicker = document.createElement('input');
-    colorContainer.appendChild(colorPicker);
-
-    colorPicker.setAttribute('type', 'color');
-    colorPicker.setAttribute('name', 'colorpicker');
-    colorPicker.setAttribute('value', hexFromColorArray(colorArrayFromRGBString(DEFAULT_PEN_COLOR)));
-    colorPicker.style.visibility = 'hidden';
-    colorPicker.style.width = colorWheelSizePx + 'px';
-    colorPicker.style.height = colorWheelSizePx + 'px';
-    colorPicker.style.position = 'absolute';
-    colorPicker.addEventListener('change', changePenColor);
-    colorPicker.addEventListener('input', changePenColor);
+    colorinput = document.querySelector('#colorinput');
+    colorinput.setAttribute('value', hexFromColorArray(colorArrayFromRGBString(DEFAULT_PEN_COLOR)));
+    colorinput.style.width = colorWheelSizePx + 'px';
+    colorinput.style.height = colorWheelSizePx + 'px';
+    colorinput.addEventListener('change', changePenColor);
+    colorinput.addEventListener('input', changePenColor);
     
-    let rangeContainer = document.createElement('div');
-    controls.appendChild(rangeContainer);
+    let chkBrushOpacity = document.querySelector('#opacityinput');
+    chkBrushOpacity.addEventListener('input', (e) => brushOpaque = e.target.checked);
 
-    rangeContainer.style.display = 'flex';
-    rangeContainer.style.flex = '1';
-    rangeContainer.style.alignItems = 'center';
-    rangeContainer.style.width = '100%';
-    rangeContainer.style.margin = '0 5%';
-    
-    rangeLabel = document.createElement('label');
-    rangeContainer.appendChild(rangeLabel);
+    b = controls1.querySelector('#clearbutton');
+    b.style.height = colorWheelSizePx + 'px'; // '40px';
+    b.style.boxShadow = '0px 0px 4px ' + GRID_BORDER_COLOR;
+    b.style.border = '1px solid ' + GRID_BORDER_COLOR;
+    b.addEventListener('click', clearGrid);
+}
 
-    rangeLabel.setAttribute('for', 'gridsize');
-    rangeLabel.style.minWidth = '70px';
-    rangeLabel.style.textAlign = 'center';
-    rangeLabel.style.borderRadius = '10px';
-    rangeLabel.textContent = 'grid size';
-
-    let range = document.createElement('input');
-    rangeContainer.appendChild(range);
-
-    range.setAttribute('type', 'range');
-    range.setAttribute('name', 'gridsize');
-    range.setAttribute('min', '1');
-    range.setAttribute('max', '100');
+function addControls2() {
+    let range = document.querySelector('#slidercontainer input');
     range.setAttribute('value', gridSize);
-    range.style.width = '100%';
-    range.style.margin = '0 10px';
     range.addEventListener('input', moveGridSizeSlider); 
     range.addEventListener('mousedown', moveGridSizeSlider); 
     range.addEventListener('mouseup', changeGridSize);
     range.addEventListener('touchend', changeGridSize);
-
-    rangeOutput = document.createElement('output');
-    rangeOutput.setAttribute('for', 'gridsize');
+    
+    rangeOutput = document.querySelector('#slidercontainer output');
     rangeOutput.textContent = gridSize;
-    rangeOutput.style.borderRadius = '50%';
-    rangeOutput.style.minWidth = '26px';
-    rangeOutput.style.textAlign = 'center';
-    rangeContainer.appendChild(rangeOutput);
-
-    let brushOpacity = document.createElement('input');
-    brushOpacity.setAttribute('type', 'checkbox');
-    brushOpacity.addEventListener('click', (e) => brushOpaque = e.target.value );
-    controls.appendChild(brushOpacity);
-
-    b = document.createElement('button');
-    b.textContent = 'clear';
-    b.style.marginLeft = '10px';
-    b.style.height = '40px';
-    b.style.width = '50px';
-    b.style.backgroundColor = '';
-    b.style.boxShadow = '0px 0px 4px ' + GRID_BORDER_COLOR; // rgba(0, 0, 30, 0.33)';
-    b.style.border = '1px solid ' + GRID_BORDER_COLOR; // rgba(48, 213, 200, 0.33)';
-    b.style.borderRadius = '10px';
-    b.addEventListener('click', clearGrid);
-    controls.appendChild(b);   
-
 }
 
 function colorWheelClick(e) {
-    colorPicker.dispatchEvent(new e.constructor(e.type));
+    colorinput.dispatchEvent(new e.constructor(e.type));
 }
 
 function getCellSizePx() {
     return gridWidthPx / gridSize;
 }
 
-function getGridSizePx() {
-    let size = Math.min(window.innerWidth, 
-                        window.innerHeight - header.offsetHeight 
-                                           - controls.offsetHeight);
+function getHeaderFooterTotalHeight() {
+    return header.offsetHeight + footer.offsetHeight + FOOTER_MARGIN_PX * 2; // + controls1.offsetHeight + controls2.offsetHeight;
+}
 
-    return size - GRID_MARGIN_PX * 2 - GRID_BORDER_PX * 2;
+function getGridSizePx() {
+    let size = Math.min(window.innerWidth, window.innerHeight - getHeaderFooterTotalHeight());
+
+    return Math.max(GRID_SIZE_MIN_PX, size - GRID_MARGIN_PX * 2 - GRID_BORDER_PX * 2 - 1);
 }
 
 function createGrid(size) {
@@ -189,6 +130,7 @@ function createGrid(size) {
     for (let i = 0; i < size; i++) {
         for (let j = 0; j < size; j++) {
             let div = document.createElement('div');
+            div.style.id = i + j;
             div.style.width = cellSize + 'px';
             div.style.height = cellSize + 'px';
             //div.style.border = 'none';
@@ -224,11 +166,17 @@ function createGrid(size) {
 
 function resizeWindow() {
 
-    if (getGridSizePx === gridWidthPx) return;
+    if (getGridSizePx() === gridWidthPx) return;
 
     gridWidthPx = getGridSizePx();
     gridContainer.style.width = gridWidthPx + 'px';
-    controls.style.width = gridWidthPx + GRID_BORDER_PX * 2 + 'px';
+    controls1.style.width = gridWidthPx + GRID_BORDER_PX * 2 + 'px';
+    controls2.style.width = controls1.style.width;
+
+    const hseparators = document.querySelectorAll('.hseparator');
+    for (let div of hseparators) {
+        div.style.width = parseInt(gridWidthPx * 0.6) + 'px';
+    }
 
     let cellSize = getCellSizePx();
 
@@ -276,6 +224,7 @@ function updateCell(e) {
     if (e.buttons < 1 || e.buttons > 2) return;
 
     let div = e.target;
+    //console.log(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
     let divColor = div.style.backgroundColor.replace(/[^\d,.]/g, '').split(',');
 
     let pen = (e.buttons === 2) ? [255, 255, 255] : penColor;
@@ -284,10 +233,10 @@ function updateCell(e) {
         divColor = pen;
     }
     else {
-        const divWeight = 3;
+        const divWeight = 2;
         const penWeight = 1;
         const totalWeight = divWeight + penWeight;
-        divColor = divColor.map((e, i) => clampColorVal(parseInt((+e * divWeight + parseInt(+pen[i] * penWeight)) / totalWeight)));
+        divColor = divColor.map((e, i) => clampColorVal(parseInt(Math.floor((+e * divWeight + parseInt(+pen[i] * penWeight))) / totalWeight)));
     }
 
     div.style.backgroundColor = `rgb(${divColor[0]}, ${divColor[1]}, ${divColor[2]}, 1)`;
@@ -305,6 +254,7 @@ function moveGridSizeSlider(e) {
     rangeOutput.style.backgroundColor = HIGHLIGHT_COLOR
     rangeOutput.style.boxShadow = '0px 0px 16px ' + HIGHLIGHT_COLOR;
 
+    let rangeLabel = document.querySelector('#slidercontainer label');
     rangeLabel.style.backgroundColor = HIGHLIGHT_COLOR
     rangeLabel.style.boxShadow = '0px 0px 16px ' + HIGHLIGHT_COLOR;
 }
@@ -313,6 +263,7 @@ function finishMovingGridSizeSlider() {
     rangeOutput.style.backgroundColor = 'transparent';
     rangeOutput.style.boxShadow = 'none';
 
+    let rangeLabel = document.querySelector('#slidercontainer label');
     rangeLabel.style.backgroundColor = 'transparent';
     rangeLabel.style.boxShadow = 'none';
 }
