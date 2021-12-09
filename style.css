@@ -55,6 +55,7 @@ body {
 
 #controls2 {
     margin: 16px 0 10px;
+    flex-wrap: wrap;
 }
 
 #colorcontainer {
@@ -92,24 +93,28 @@ body {
     margin: auto 30px;
 }
 
-#slidercontainer {
+#gridsizeslidercontainer, #pensizeslidercontainer {
     display: flex;
     align-items: center;
     width: 90%;
+    margin: 6px auto;
 }
 
-#slidercontainer label {
+#gridsizeslidercontainer label,
+#pensizeslidercontainer label {
     min-width: 70px;
     text-align: center;
     border-radius: 10px;
 }
 
-#slidercontainer input {
+#gridsizeslidercontainer input,
+#pensizeslidercontainer input {
     width: 100%;
     margin: 0 10px;
 }
 
-#slidercontainer output {
+#gridsizeslidercontainer output,
+#pensizeslidercontainer output {
     border-radius: 50%;
     min-width: 30px;
     text-align: center;

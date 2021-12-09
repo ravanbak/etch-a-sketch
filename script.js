@@ -10,6 +10,8 @@ const HIGHLIGHT_COLOR = 'rgb(0, 190, 255, 0.2)';
 
 let gridWidthPx = 960;
 let gridSize = GRID_SIZE_DEFAULT;
+let penSize = 1;
+let maxPenSize = GRID_SIZE_DEFAULT;
 
 let gridArray = []; // array of grid cells
 
@@ -39,6 +41,7 @@ function init() {
 
     addHeaderElements();
     createGrid(gridSize);
+    updatePenSizeInput();
     
     window.onresize = resizeWindow;
 
@@ -84,15 +87,25 @@ function addControls1() {
 }
 
 function addControls2() {
-    const range = document.querySelector('#slidercontainer input');
-    range.setAttribute('value', gridSize);
-    range.addEventListener('input', moveGridSizeSlider); 
-    range.addEventListener('mousedown', moveGridSizeSlider); 
-    range.addEventListener('mouseup', changeGridSize);
-    range.addEventListener('touchend', changeGridSize);
+    const gridInput = document.querySelector('#gridsizeslidercontainer input');
+    gridInput.setAttribute('value', gridSize);
+    gridInput.addEventListener('input', moveGridSizeSlider); 
+    gridInput.addEventListener('mousedown', moveGridSizeSlider); 
+    gridInput.addEventListener('mouseup', changeGridSize);
+    gridInput.addEventListener('touchend', changeGridSize);
     
-    const gridSizeOutput = document.querySelector('#slidercontainer output');
+    const gridSizeOutput = document.querySelector('#gridsizeslidercontainer output');
     gridSizeOutput.textContent = gridSize;
+
+    const penInput = document.querySelector('#pensizeslidercontainer input');
+    penInput.setAttribute('value', penSize);
+    penInput.addEventListener('input', movePenSizeSlider); 
+    penInput.addEventListener('mousedown', movePenSizeSlider); 
+    penInput.addEventListener('mouseup', finishMovingPenSizeSlider);
+    penInput.addEventListener('touchend', finishMovingPenSizeSlider);
+
+    const penSizeOutput = document.querySelector('#pensizeslidercontainer output');
+    penSizeOutput.textContent = penSize;
 }
 
 function colorWheelClick(e) {
@@ -142,14 +155,19 @@ function createGrid(size) {
         
         for (let j = 0; j < size; j++) {
             let div = makeGridCell(cellSize);
+            div.setAttribute('data-row', i);
+            div.setAttribute('data-col', j);
+
             gridArray[i].push(div);
             
+            //gridArray[i][j].textContent = i + "," + j;
             //div.textContent = i;
 
             gridContainer.appendChild(div);            
         }
     }
 
+    // round the outer corners of corner cells:
     if (size === 1) {
         gridArray[0][0].style.borderRadius = borderRadius;    
     }
@@ -215,28 +233,40 @@ function clampColorVal(val) {
 }
 
 function updateCell(e) {
-    console.log('updatecell');
     e.preventDefault(); // prevent mouse drag-drop
 
     if (e.buttons < 1 || e.buttons > 2) return;
 
-    const div = e.target;
-    //console.log(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
-    let divColor = div.style.backgroundColor.replace(/[^\d,.]/g, '').split(',');
+    let penOffset = parseInt(penSize / 2);
 
     const pen = (e.buttons === 2) ? [255, 255, 255] : penColor;
+    
+    const row = parseInt(e.target.dataset.row);
+    const rowStart = Math.max(0, row - penOffset);
+    const rowEnd = Math.min(gridSize - 1, row + penOffset);
+    
+    const col = parseInt(e.target.dataset.col);
+    const colStart = Math.max(0, col - penOffset);
+    const colEnd = Math.min(gridSize - 1, col + penOffset);
 
-    if (brushOpaque) {
-        divColor = pen;
-    }
-    else {
-        const divWeight = 2;
-        const penWeight = 1;
-        const totalWeight = divWeight + penWeight;
-        divColor = divColor.map((e, i) => clampColorVal(parseInt(Math.floor((+e * divWeight + parseInt(+pen[i] * penWeight))) / totalWeight)));
-    }
+    for (let i = rowStart; i <= rowEnd; i++) {
+        for (let j = colStart; j <= colEnd; j++) {
+            let div = gridArray[i][j];
+            let divColor = div.style.backgroundColor.replace(/[^\d,.]/g, '').split(',');
+        
+            if (brushOpaque) {
+                divColor = pen;
+            }
+            else {
+                const divWeight = (i === row && j === col) ? 2 : 4;
+                const penWeight = 1;
+                const totalWeight = divWeight + penWeight;
+                divColor = divColor.map((e, i) => clampColorVal(parseInt(Math.floor((+e * divWeight + parseInt(+pen[i] * penWeight))) / totalWeight)));
+            }
 
-    div.style.backgroundColor = `rgb(${divColor[0]}, ${divColor[1]}, ${divColor[2]}, 1)`;
+            gridArray[i][j].style.backgroundColor = `rgb(${divColor[0]}, ${divColor[1]}, ${divColor[2]}, 1)`;
+        }
+    }
 }
 
 function clearGrid() {
@@ -246,23 +276,46 @@ function clearGrid() {
     createGrid(gridSize);
 }
 
-function moveGridSizeSlider(e) {
-    const gridSizeOutput = document.querySelector('#slidercontainer output');
-    gridSizeOutput.textContent = e.target.value;
-    gridSizeOutput.style.backgroundColor = HIGHLIGHT_COLOR
-    gridSizeOutput.style.boxShadow = '0px 0px 16px ' + HIGHLIGHT_COLOR;
+function movePenSizeSlider(e) {
+    const penSizeOutput = document.querySelector('#pensizeslidercontainer output');
+    penSizeOutput.textContent = e.target.value;
+    penSizeOutput.style.backgroundColor = HIGHLIGHT_COLOR
+    penSizeOutput.style.boxShadow = '0px 0px 16px ' + HIGHLIGHT_COLOR;
 
-    const rangeLabel = document.querySelector('#slidercontainer label');
+    const rangeLabel = document.querySelector('#pensizeslidercontainer label');
     rangeLabel.style.backgroundColor = HIGHLIGHT_COLOR
     rangeLabel.style.boxShadow = '0px 0px 16px ' + HIGHLIGHT_COLOR;
 }
 
-function finishMovingGridSizeSlider() {
-    const gridSizeOutput = document.querySelector('#slidercontainer output');
+function finishMovingPenSizeSlider(e) {
+    penSize = parseInt(e.target.value);
+
+    const penSizeOutput = document.querySelector('#pensizeslidercontainer output');
+    penSizeOutput.style.backgroundColor = 'transparent';
+    penSizeOutput.style.boxShadow = 'none';
+
+    const rangeLabel = document.querySelector('#pensizeslidercontainer label');
+    rangeLabel.style.backgroundColor = 'transparent';
+    rangeLabel.style.boxShadow = 'none';
+}
+
+function moveGridSizeSlider(e) {
+    const gridSizeOutput = document.querySelector('#gridsizeslidercontainer output');
+    gridSizeOutput.textContent = e.target.value;
+    gridSizeOutput.style.backgroundColor = HIGHLIGHT_COLOR
+    gridSizeOutput.style.boxShadow = '0px 0px 16px ' + HIGHLIGHT_COLOR;
+
+    const rangeLabel = document.querySelector('#gridsizeslidercontainer label');
+    rangeLabel.style.backgroundColor = HIGHLIGHT_COLOR
+    rangeLabel.style.boxShadow = '0px 0px 16px ' + HIGHLIGHT_COLOR;
+}
+
+function finishMovingGridSizeSlider(e) {
+    const gridSizeOutput = document.querySelector('#gridsizeslidercontainer output');
     gridSizeOutput.style.backgroundColor = 'transparent';
     gridSizeOutput.style.boxShadow = 'none';
 
-    const rangeLabel = document.querySelector('#slidercontainer label');
+    const rangeLabel = document.querySelector('#gridsizeslidercontainer label');
     rangeLabel.style.backgroundColor = 'transparent';
     rangeLabel.style.boxShadow = 'none';
 }
@@ -270,12 +323,25 @@ function finishMovingGridSizeSlider() {
 function changeGridSize(e) {
     if (gridSize !== parseInt(e.target.value)) {
         gridSize = parseInt(e.target.value)
-
-        const gridSizeOutput = document.querySelector('#slidercontainer output');
+        
+        const gridSizeOutput = document.querySelector('#gridsizeslidercontainer output');
         gridSizeOutput.textContent = gridSize;
+
+        updatePenSizeInput();
 
         clearGrid();
     }
 
     finishMovingGridSizeSlider();
+}
+
+function updatePenSizeInput() {
+    maxPenSize = gridSize;
+    penSize = Math.min(maxPenSize, penSize);
+
+    const penSizeInput = document.querySelector('#pensizeslidercontainer input');
+    penSizeInput.setAttribute('max', maxPenSize);
+    penSizeInput.setAttribute('value', penSize);
+    const penSizeOutput = document.querySelector('#pensizeslidercontainer output');
+    penSizeOutput.textContent = penSize;
 }
