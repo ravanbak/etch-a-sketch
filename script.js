@@ -2,7 +2,7 @@ const GRID_SIZE_DEFAULT = 25;
 const GRID_SIZE_MIN_PX = 200;
 const GRID_BORDER_PX = 0;
 const GRID_BORDER_COLOR = 'rgb(100, 100, 100, 1)';
-const GRID_BORDER_RADIUS = 10;
+const GRID_STYLE_BORDER_RADIUS = '10px';
 const GRID_MARGIN_PX = 16;
 const FOOTER_MARGIN_PX = 16;
 const DEFAULT_PEN_COLOR = 'rgb(100, 100, 100)';
@@ -10,6 +10,8 @@ const HIGHLIGHT_COLOR = 'rgb(0, 190, 255, 0.2)';
 
 let gridWidthPx = 960;
 let gridSize = GRID_SIZE_DEFAULT;
+
+let gridArray = []; // array of grid cells
 
 let brushOpaque = false;
 
@@ -24,7 +26,7 @@ init();
 function init() {
     gridContainer.style.margin = GRID_MARGIN_PX + 'px';
     gridContainer.style.border = `${GRID_BORDER_COLOR} ${GRID_BORDER_PX}px solid`;
-    gridContainer.style.borderRadius = GRID_BORDER_RADIUS + 'px';
+    gridContainer.style.borderRadius = GRID_STYLE_BORDER_RADIUS;
     gridContainer.style.boxShadow = `0px 0px 20px ${GRID_BORDER_COLOR}`;
     
     // prevent context menu on right-click
@@ -114,48 +116,49 @@ function getGridSizePx() {
     return Math.max(GRID_SIZE_MIN_PX, size - GRID_MARGIN_PX * 2 - GRID_BORDER_PX * 2 - 1);
 }
 
+function makeGridCell(cellSize) {
+    let div = document.createElement('div');
+
+    div.style.width = cellSize + 'px';
+    div.style.height = cellSize + 'px';
+    //div.style.border = 'none';
+
+    div.style.backgroundColor = 'rgb(255, 255, 255, 0)';
+    div.classList.add('cell');
+    div.addEventListener('mouseover', updateCell);
+    div.addEventListener('mousedown', updateCell);
+
+    return div;
+}
+
 function createGrid(size) {
-    gridWidthPx = getGridSizePx(); 
-    gridContainer.style.width = gridWidthPx + 'px';
-
     const cellSize = getCellSizePx();
-
-    const borderRadius = GRID_BORDER_RADIUS + 'px';
+    const borderRadius = GRID_STYLE_BORDER_RADIUS;
     
+    gridArray = [];
     for (let i = 0; i < size; i++) {
+        let row = [];
+        gridArray.push(row);
+        
         for (let j = 0; j < size; j++) {
-            let div = document.createElement('div');
-            div.style.id = i + j;
-            div.style.width = cellSize + 'px';
-            div.style.height = cellSize + 'px';
-            //div.style.border = 'none';
-            div.style.backgroundColor = 'rgb(255, 255, 255, 0)';
-            div.classList.add('cell');
-            div.addEventListener('mouseover', updateCell);
-            div.addEventListener('mousedown', updateCell);
+            let div = makeGridCell(cellSize);
+            gridArray[i].push(div);
             
-            // round outer corners of corner cells
-            // do not use 'else' statements so that all corners will be
-            // rounded when grid size = 1
-            if (i == 0) {
-                if (j === 0) {
-                    div.style.borderTopLeftRadius = borderRadius;
-                }
-                if (j === size - 1) {
-                    div.style.borderTopRightRadius = borderRadius;
-                }
-            }
-            if (i === size - 1) {
-                if (j === 0) {
-                    div.style.borderBottomLeftRadius = borderRadius;
-                }
-                if (j === size - 1) {
-                    div.style.borderBottomRightRadius = borderRadius;
-                }
-            }
+            //div.textContent = i;
 
-            gridContainer.appendChild(div);
+            gridContainer.appendChild(div);            
         }
+    }
+
+    if (size === 1) {
+        gridArray[0][0].style.borderRadius = borderRadius;    
+    }
+    else {
+        const s = size - 1;
+        gridArray[0][0].style.borderTopLeftRadius = borderRadius;
+        gridArray[0][s].style.borderTopRightRadius = borderRadius;
+        gridArray[s][0].style.borderBottomLeftRadius = borderRadius;
+        gridArray[s][s].style.borderBottomRightRadius = borderRadius;
     }
 }
 
@@ -212,13 +215,14 @@ function clampColorVal(val) {
 }
 
 function updateCell(e) {
+    console.log('updatecell');
     e.preventDefault(); // prevent mouse drag-drop
 
     if (e.buttons < 1 || e.buttons > 2) return;
 
     const div = e.target;
     //console.log(e.changedTouches[0].pageX, e.changedTouches[0].pageY);
-    const divColor = div.style.backgroundColor.replace(/[^\d,.]/g, '').split(',');
+    let divColor = div.style.backgroundColor.replace(/[^\d,.]/g, '').split(',');
 
     const pen = (e.buttons === 2) ? [255, 255, 255] : penColor;
 
