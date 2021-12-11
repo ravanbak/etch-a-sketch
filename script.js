@@ -1,5 +1,5 @@
 const GRID_SIZE_DEFAULT = 25;
-const GRID_SIZE_MAX = 150;
+const GRID_SIZE_MAX = 200;
 const GRID_SIZE_MIN_PX = 200;
 const GRID_BORDER_PX = 0;
 const GRID_BORDER_COLOR = 'rgb(100, 100, 100, 1)';
@@ -9,22 +9,22 @@ const FOOTER_MARGIN_PX = 16;
 const DEFAULT_PEN_COLOR = 'rgb(100, 100, 100)';
 const HIGHLIGHT_COLOR = 'rgb(0, 190, 255, 0.2)';
 
+let gridSize = GRID_SIZE_DEFAULT; // number of cells per side
 let gridWidthPx = 960;
-let gridSize = GRID_SIZE_DEFAULT;
-let penSize = 1;
-let maxPenSize = GRID_SIZE_DEFAULT;
+let penSize = 1; // diameter in grid cells
+let maxPenSize = GRID_SIZE_DEFAULT; 
+let penOpaque = false;
+let penColor = colorArrayFromRGBString(DEFAULT_PEN_COLOR);
 
-let gridArray = []; // array of grid cells
-
-let brushOpaque = false;
+let gridArray = []; // array of arrays of rows of grid cells
 
 const controls1 = document.querySelector('#controls1');
 const controls2 = document.querySelector('#controls2');
 const gridContainer = document.querySelector('#gridcontainer');
 
-let penColor = colorArrayFromRGBString(DEFAULT_PEN_COLOR);
+//let ongoingTouches = [];
 
-init();
+document.addEventListener('DOMContentLoaded', init);
 
 function init() {
     gridContainer.style.margin = GRID_MARGIN_PX + 'px';
@@ -32,11 +32,6 @@ function init() {
     gridContainer.style.borderRadius = GRID_STYLE_BORDER_RADIUS;
     gridContainer.style.boxShadow = `0px 0px 20px ${GRID_BORDER_COLOR}`;
     
-    // prevent context menu on right-click
-    gridContainer.addEventListener('contextmenu', (e) => { e.preventDefault() });
-    //gridContainer.addEventListener('touchstart', updateCell);
-    //gridContainer.addEventListener('touchmove', updateCell);
-
     const footer = document.querySelector('#footer');
     footer.style.margin = FOOTER_MARGIN_PX + 'px';
 
@@ -47,6 +42,14 @@ function init() {
     window.onresize = resizeWindow;
 
     resizeWindow();
+
+    // prevent context menu on right-click
+    gridContainer.addEventListener('contextmenu', (e) => { e.preventDefault() });
+
+    gridContainer.addEventListener('touchstart', handleTouch, false);
+    gridContainer.addEventListener('touchend', handleTouchEnd, false);
+    gridContainer.addEventListener('touchcancel', handleTouchCancel, false);
+    gridContainer.addEventListener('touchmove', handleTouch, false);    
 }
 
 function addHeaderElements() {
@@ -78,7 +81,7 @@ function addControls1() {
     colorinput.addEventListener('input', changePenColor);
     
     const chkBrushOpacity = document.querySelector('#opacityinput');
-    chkBrushOpacity.addEventListener('input', (e) => brushOpaque = e.target.checked);
+    chkBrushOpacity.addEventListener('input', (e) => penOpaque = e.target.checked);
 
     b = controls1.querySelector('#clearbutton');
     b.style.height = colorWheelSizePx + 'px'; // '40px';
@@ -150,7 +153,7 @@ function createGrid(size) {
     const cellSize = getCellSizePx();
     const borderRadius = GRID_STYLE_BORDER_RADIUS;
     
-    gridArray = [];
+    gridArray = []; // 2d array
     for (let i = 0; i < size; i++) {
         let row = [];
         gridArray.push(row);
@@ -160,30 +163,24 @@ function createGrid(size) {
             div.setAttribute('data-row', i);
             div.setAttribute('data-col', j);
 
+            div.addEventListener('touchstart', (e) => { e.preventDefault() });
+            div.addEventListener('touchmove', (e) => { e.preventDefault() });
+
             gridArray[i].push(div);
-            
-            //gridArray[i][j].textContent = i + "," + j;
-            //div.textContent = i;
 
             gridContainer.appendChild(div);            
         }
     }
 
     // round the outer corners of corner cells:
-    if (size === 1) {
-        gridArray[0][0].style.borderRadius = borderRadius;    
-    }
-    else {
-        const s = size - 1;
-        gridArray[0][0].style.borderTopLeftRadius = borderRadius;
-        gridArray[0][s].style.borderTopRightRadius = borderRadius;
-        gridArray[s][0].style.borderBottomLeftRadius = borderRadius;
-        gridArray[s][s].style.borderBottomRightRadius = borderRadius;
-    }
+    const s = size - 1;
+    gridArray[0][0].style.borderTopLeftRadius = borderRadius;
+    gridArray[0][s].style.borderTopRightRadius = borderRadius;
+    gridArray[s][0].style.borderBottomLeftRadius = borderRadius;
+    gridArray[s][s].style.borderBottomRightRadius = borderRadius;
 }
 
 function resizeWindow() {
-
     gridWidthPx = getGridSizePx();
     gridContainer.style.width = gridWidthPx + 'px';
     controls1.style.width = gridWidthPx + GRID_BORDER_PX * 2 + 'px';
@@ -199,7 +196,6 @@ function resizeWindow() {
         div.style.width = cellSize;
         div.style.height = cellSize;       
     }
-
 }
 
 function colorComponentToHex(c) {
@@ -212,11 +208,9 @@ function colorArrayFromHex(hex) {
 }
 
 function hexFromColorArray(color) {
-    const colorHex = '#' + colorComponentToHex(color[0]) +
-                           colorComponentToHex(color[1]) +
-                           colorComponentToHex(color[2]);
-
-    return colorHex;
+    return '#' + colorComponentToHex(color[0]) +
+                 colorComponentToHex(color[1]) +
+                 colorComponentToHex(color[2]);
 }
 
 function changePenColor(e) {
@@ -234,20 +228,34 @@ function clampColorVal(val) {
     return Math.min(255, Math.max(0, Math.floor(val)));
 }
 
-function updateCell(e) {
-    e.preventDefault(); // prevent mouse drag-drop
+function handleTouch(e) {
+    e.preventDefault;
 
-    if (e.buttons < 1 || e.buttons > 2) return;
+    const cellSize = getCellSizePx();
 
-    let penOffset = parseInt(penSize / 2);
+    let touches = e.changedTouches;
+    for (t of touches) {
+        let i = Math.floor((t.pageY - gridContainer.offsetTop) / cellSize);
+        let j = Math.floor((t.pageX - gridContainer.offsetLeft) / cellSize);
+        markCell(i, j);
+    }
+}
 
-    const pen = (e.buttons === 2) ? [255, 255, 255] : penColor;
-    
-    const row = parseInt(e.target.dataset.row);
+function handleTouchEnd(e) {
+    e.preventDefault;
+}
+
+function handleTouchCancel(e) {
+    e.preventDefault;
+}
+
+function markCell(row, col, erase) {
+    const pen = (erase) ? [255, 255, 255] : penColor;
+    let penOffset = parseInt(penSize / 2); 
+
     const rowStart = Math.max(0, row - penOffset);
     const rowEnd = Math.min(gridSize - 1, row + penOffset);
     
-    const col = parseInt(e.target.dataset.col);
     const colStart = Math.max(0, col - penOffset);
     const colEnd = Math.min(gridSize - 1, col + penOffset);
 
@@ -259,10 +267,10 @@ function updateCell(e) {
             let divColor = div.style.backgroundColor.replace(/[^\d,.]/g, '').split(',');
 
             // ratio of pen color to current cell color
-            const penWeight = 10;
-            const divWeight = 10;
+            const penWeight = 100;
+            const divWeight = 100;
 
-            let divWeightCurrent = (brushOpaque) ? 0 : divWeight;
+            let divWeightCurrent = (penOpaque) ? 0 : divWeight;
             let penWeightCurrent = penWeight;
 
             if (penSize > 1) {
@@ -271,10 +279,10 @@ function updateCell(e) {
                 let d = Math.sqrt(rowDelta ** 2 + colDelta ** 2);
                 if (d > penRad) {
                     penWeightCurrent = 0;
-                    divWeightCurrent = 1;
+                    //divWeightCurrent = 1;
                 }
-                else if (brushOpaque) {
-                    penWeightCurrent = 1;
+                else if (penOpaque) {
+                    //penWeightCurrent = 1;
                     divWeightCurrent = 0;
                 }
                 else {
@@ -293,6 +301,17 @@ function updateCell(e) {
             }
         }
     }
+}
+
+function updateCell(e) {
+    e.preventDefault(); // prevent mouse drag-drop
+
+    if (e.buttons < 1 || e.buttons > 2) return;
+
+    const row = parseInt(e.target.dataset.row);
+    const col = parseInt(e.target.dataset.col);
+    
+    markCell(row, col, (e.buttons === 2) ? true : false);
 }
 
 function clearGrid() {
