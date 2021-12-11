@@ -1,4 +1,5 @@
 const GRID_SIZE_DEFAULT = 25;
+const GRID_SIZE_MAX = 150;
 const GRID_SIZE_MIN_PX = 200;
 const GRID_BORDER_PX = 0;
 const GRID_BORDER_COLOR = 'rgb(100, 100, 100, 1)';
@@ -88,6 +89,7 @@ function addControls1() {
 
 function addControls2() {
     const gridInput = document.querySelector('#gridsizeslidercontainer input');
+    gridInput.setAttribute('max', GRID_SIZE_MAX);
     gridInput.setAttribute('value', gridSize);
     gridInput.addEventListener('input', moveGridSizeSlider); 
     gridInput.addEventListener('mousedown', moveGridSizeSlider); 
@@ -249,22 +251,46 @@ function updateCell(e) {
     const colStart = Math.max(0, col - penOffset);
     const colEnd = Math.min(gridSize - 1, col + penOffset);
 
+    const penRad = penSize / 2;
+
     for (let i = rowStart; i <= rowEnd; i++) {
         for (let j = colStart; j <= colEnd; j++) {
             let div = gridArray[i][j];
             let divColor = div.style.backgroundColor.replace(/[^\d,.]/g, '').split(',');
-        
-            if (brushOpaque) {
-                divColor = pen;
-            }
-            else {
-                const divWeight = (i === row && j === col) ? 2 : 4;
-                const penWeight = 1;
-                const totalWeight = divWeight + penWeight;
-                divColor = divColor.map((e, i) => clampColorVal(parseInt(Math.floor((+e * divWeight + parseInt(+pen[i] * penWeight))) / totalWeight)));
-            }
 
-            gridArray[i][j].style.backgroundColor = `rgb(${divColor[0]}, ${divColor[1]}, ${divColor[2]}, 1)`;
+            // ratio of pen color to current cell color
+            const penWeight = 10;
+            const divWeight = 10;
+
+            let divWeightCurrent = (brushOpaque) ? 0 : divWeight;
+            let penWeightCurrent = penWeight;
+
+            if (penSize > 1) {
+                let rowDelta = Math.abs(i - row);
+                let colDelta = Math.abs(j - col);
+                let d = Math.sqrt(rowDelta ** 2 + colDelta ** 2);
+                if (d > penRad) {
+                    penWeightCurrent = 0;
+                    divWeightCurrent = 1;
+                }
+                else if (brushOpaque) {
+                    penWeightCurrent = 1;
+                    divWeightCurrent = 0;
+                }
+                else {
+                    //divWeightCurrent = divWeight * d ** 2 / penRad ** 2;
+                    penWeightCurrent = Math.max(0, penWeight * (penRad - d) / penRad);
+                    divWeightCurrent = divWeight;
+                }
+            }
+            
+            if (penWeightCurrent > 0) {
+                const totalWeight = divWeightCurrent + penWeightCurrent;
+                divColor = divColor.map((el, i) => clampColorVal(
+                                                    Math.floor((+el * divWeightCurrent + (+pen[i] * penWeightCurrent))) / totalWeight));
+                
+                gridArray[i][j].style.backgroundColor = `rgb(${divColor[0]}, ${divColor[1]}, ${divColor[2]}, 1)`;                                          
+            }
         }
     }
 }
