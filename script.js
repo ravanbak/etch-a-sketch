@@ -1,6 +1,7 @@
+const BUTTON_FULLSCREEN_MARGIN_PX = 10;
 const GRID_SIZE_DEFAULT = 25;
-const GRID_SIZE_MAX = 200;
-const GRID_SIZE_MIN_PX = 200;
+const GRID_SIZE_MAX = 150;
+const GRID_SIZE_MIN_PX = 300;
 const GRID_BORDER_PX = 0;
 const GRID_BORDER_COLOR = 'rgb(100, 100, 100, 1)';
 const GRID_STYLE_BORDER_RADIUS = '10px';
@@ -8,6 +9,8 @@ const GRID_MARGIN_PX = 16;
 const FOOTER_MARGIN_PX = 16;
 const DEFAULT_PEN_COLOR = 'rgb(100, 100, 100)';
 const HIGHLIGHT_COLOR = 'rgb(0, 190, 255, 0.2)';
+
+let fullScreen = false;
 
 let gridSize = GRID_SIZE_DEFAULT; // number of cells per side
 let gridWidthPx = 960;
@@ -53,6 +56,9 @@ function init() {
 }
 
 function addHeaderElements() {
+    b = document.querySelector('#buttonfullscreen input');
+    b.addEventListener('click', goFullScreen);    
+
     addControls1();
     addControls2();
 }
@@ -123,9 +129,17 @@ function getCellSizePx() {
 }
 
 function getHeaderFooterTotalHeight() {
-    const header = document.querySelector('#header');
-    const footer = document.querySelector('#footer');
-    return header.offsetHeight + footer.offsetHeight + FOOTER_MARGIN_PX * 2;
+    const divFullScreen = document.querySelector('#buttonfullscreen');
+
+    if (fullScreen) {
+        return divFullScreen.offsetHeight;
+    }
+    else {
+        const header = document.querySelector('#header');
+        const footer = document.querySelector('#footer');
+        return divFullScreen.offsetHeight + BUTTON_FULLSCREEN_MARGIN_PX + 
+               header.offsetHeight + footer.offsetHeight + FOOTER_MARGIN_PX * 2;
+    }
 }
 
 function getGridSizePx() {
@@ -188,9 +202,11 @@ function resizeWindow() {
     controls1.style.width = gridWidthPx + GRID_BORDER_PX * 2 + 'px';
     controls2.style.width = controls1.style.width;
 
-    const hseparators = document.querySelectorAll('.hseparator');
-    for (let div of hseparators) {
-        div.style.width = parseInt(gridWidthPx * 0.6) + 'px';
+    if (!fullScreen) {
+        const hseparators = document.querySelectorAll('.hseparator');
+        for (let div of hseparators) {
+            div.style.width = parseInt(gridWidthPx * 0.6) + 'px';
+        }
     }
 
     const cellSize = getCellSizePx() + 'px';
@@ -363,6 +379,20 @@ function updateCell(e) {
     const col = parseInt(e.target.dataset.col);
     
     markCell(row, col, (e.buttons === 2) ? true : false);
+}
+
+function goFullScreen() {
+    fullScreen = !fullScreen;
+    
+    const header = document.querySelector('#header');
+    header.style.visibility = (fullScreen) ? 'hidden' : 'visible';
+    header.style.height = (fullScreen) ? '0' : 'auto';
+    
+    const footer = document.querySelector('#footer');
+    footer.style.visibility = (fullScreen) ? 'hidden' : 'visible';
+    footer.style.height = (fullScreen) ? '0' : 'auto';
+
+    resizeWindow();
 }
 
 function clearGrid() {

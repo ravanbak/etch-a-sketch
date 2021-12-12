@@ -8,10 +8,22 @@ body {
     margin: 0;
 }
 
+#buttonfullscreen {
+    margin: 10px 10px 0;
+    margin-left: auto;
+}
+
+#buttonfullscreen input {
+    height: 30px;
+    width: auto;
+    padding: 0;
+}
+
 #header {
     display: flex;
     flex-direction: column;
     align-items: center;
+    /*margin-top: -55px;*/
 }
 
 #title {
@@ -22,7 +34,8 @@ body {
 }
 
 #title h1 {
-    margin: 16px auto 0;
+    /*margin: 16px auto 0;*/
+    margin: 0;
 }
 
 #title p {
@@ -125,8 +138,8 @@ body {
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    min-width: 200px;
-    min-height: 200px;
+    /*min-width: 200px;
+    min-height: 200px;*/
     background: rgb(254, 254, 255);
 }
 
