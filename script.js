@@ -22,7 +22,7 @@ const controls1 = document.querySelector('#controls1');
 const controls2 = document.querySelector('#controls2');
 const gridContainer = document.querySelector('#gridcontainer');
 
-//let ongoingTouches = [];
+let ongoingTouches = [];
 
 document.addEventListener('DOMContentLoaded', init);
 
@@ -46,10 +46,10 @@ function init() {
     // prevent context menu on right-click
     gridContainer.addEventListener('contextmenu', (e) => { e.preventDefault() });
 
-    gridContainer.addEventListener('touchstart', handleTouch, false);
+    gridContainer.addEventListener('touchstart', handleTouchStart, false);
+    gridContainer.addEventListener('touchmove', handleTouchMove, false);    
     gridContainer.addEventListener('touchend', handleTouchEnd, false);
-    gridContainer.addEventListener('touchcancel', handleTouchCancel, false);
-    gridContainer.addEventListener('touchmove', handleTouch, false);    
+    gridContainer.addEventListener('touchcancel', handleTouchEnd, false);
 }
 
 function addHeaderElements() {
@@ -154,6 +154,7 @@ function createGrid(size) {
     const borderRadius = GRID_STYLE_BORDER_RADIUS;
     
     gridArray = []; // 2d array
+
     for (let i = 0; i < size; i++) {
         let row = [];
         gridArray.push(row);
@@ -183,6 +184,7 @@ function createGrid(size) {
 function resizeWindow() {
     gridWidthPx = getGridSizePx();
     gridContainer.style.width = gridWidthPx + 'px';
+    gridContainer.style.height = gridWidthPx + 'px';
     controls1.style.width = gridWidthPx + GRID_BORDER_PX * 2 + 'px';
     controls2.style.width = controls1.style.width;
 
@@ -228,25 +230,74 @@ function clampColorVal(val) {
     return Math.min(255, Math.max(0, Math.floor(val)));
 }
 
-function handleTouch(e) {
+function copyTouch({ identifier, pageX, pageY }) {
+    return { identifier, pageX, pageY };
+}
+
+function getTouchIndexById(idx) {
+    for (let i = 0; i < ongoingTouches.length; i++) {
+        if (ongoingTouches[i].identifier == idx) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function handleTouchStart(e) {
     e.preventDefault;
 
+    let touches = e.changedTouches;
+
     const cellSize = getCellSizePx();
+    for (let i = 0; i < touches.length; i++) {
+        ongoingTouches.push(copyTouch(touches[i]));
+        
+        let row = Math.floor((touches[i].pageY - gridContainer.offsetTop) / cellSize);
+        let col = Math.floor((touches[i].pageX - gridContainer.offsetLeft) / cellSize);
+        
+        markCell(row, col);
+    }
+}
+
+function handleTouchMove(e) {
+    e.preventDefault;
 
     let touches = e.changedTouches;
-    for (t of touches) {
-        let i = Math.floor((t.pageY - gridContainer.offsetTop) / cellSize);
-        let j = Math.floor((t.pageX - gridContainer.offsetLeft) / cellSize);
-        markCell(i, j);
+
+    const cellSize = getCellSizePx();
+    for (let i = 0; i < touches.length; i++) {
+        let idx = getTouchIndexById(touches[i].identifier);
+        if (idx >= 0) {
+            let t = touches[i];
+            let row = Math.floor((t.pageY - gridContainer.offsetTop) / cellSize);
+            let col = Math.floor((t.pageX - gridContainer.offsetLeft) / cellSize);
+
+            let touchOngoing = ongoingTouches[idx];
+            let rowOngoing = Math.floor((touchOngoing.pageY - gridContainer.offsetTop) / cellSize);
+            let colOngoing = Math.floor((touchOngoing.pageX - gridContainer.offsetLeft) / cellSize);
+
+            if (rowOngoing != row || colOngoing != col) {
+                // only mark the cell again if row or col has changed.
+                markCell(row, col);
+            }
+
+            ongoingTouches.splice(idx, 1, copyTouch(touches[i]));
+        }
     }
 }
 
 function handleTouchEnd(e) {
     e.preventDefault;
-}
 
-function handleTouchCancel(e) {
-    e.preventDefault;
+    let touches = e.changedTouches;
+
+    for (let i = 0; i < touches.length; i++) {
+        let idx = getTouchIndexById(touches[i].identifier);
+
+        if (idx >= 0) {
+            ongoingTouches.splice(idx, 1);
+        }
+    }
 }
 
 function markCell(row, col, erase) {
