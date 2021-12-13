@@ -9,12 +9,13 @@ body {
 }
 
 #buttonfullscreen {
-    margin: 10px 10px 0;
+    /*margin: 10px 10px 0;*/
     margin-left: auto;
+    /*justify-self: right;*/
 }
 
 #buttonfullscreen input {
-    height: 30px;
+    /*height: 20px;*/
     width: auto;
     padding: 0;
 }
@@ -28,18 +29,20 @@ body {
 
 #title {
     display: flex;
-    flex-direction: column;
+    /*flex-direction: column;*/
     justify-content: center;
     align-items: center;
+    width: 100%;
 }
 
 #title h1 {
     /*margin: 16px auto 0;*/
-    margin: 0;
+    margin: 6px 0 0 auto;
+    
 }
 
-#title p {
-    margin: 16px auto;
+#instructions {
+    margin: 4px auto 16px auto;
 }
 
 .vseparator {
@@ -54,20 +57,28 @@ body {
     border-top: 1px inset rgb(10, 10, 10, 0.25);
 }
 
+#controls {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
 #controls1, #controls2 {
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
     min-width: 320px;
     /*border-top: 1px inset rgb(10, 10, 10, 0.25);*/
 }
 
 #controls1 {
-    margin: 8px auto;
+    margin: 4px auto;
 }
 
 #controls2 {
-    margin: 16px 0 10px;
+    margin: 12px 0 10px;
     flex-wrap: wrap;
 }
 
@@ -147,6 +158,9 @@ body {
     display: flex;
     justify-content: center;
     width: 230px;
+}
+
+#copyright {
     padding-top: 4px;
     border-top: 1px solid rgb(100, 100, 100, 0.2);
 }

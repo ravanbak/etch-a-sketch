@@ -1,3 +1,4 @@
+const BUTTON_FULLSCREEN_HEIGHT_PX = 20;
 const BUTTON_FULLSCREEN_MARGIN_PX = 10;
 const GRID_SIZE_DEFAULT = 25;
 const GRID_SIZE_MAX = 150;
@@ -21,6 +22,7 @@ let penColor = colorArrayFromRGBString(DEFAULT_PEN_COLOR);
 
 let gridArray = []; // array of arrays of rows of grid cells
 
+const controls = document.querySelector('#controls');
 const controls1 = document.querySelector('#controls1');
 const controls2 = document.querySelector('#controls2');
 const gridContainer = document.querySelector('#gridcontainer');
@@ -57,6 +59,7 @@ function init() {
 
 function addHeaderElements() {
     b = document.querySelector('#buttonfullscreen input');
+    b.style.height = BUTTON_FULLSCREEN_HEIGHT_PX + 'px';
     b.addEventListener('click', goFullScreen);    
 
     addControls1();
@@ -131,15 +134,13 @@ function getCellSizePx() {
 function getHeaderFooterTotalHeight() {
     const divFullScreen = document.querySelector('#buttonfullscreen');
 
-    if (fullScreen) {
-        return divFullScreen.offsetHeight;
-    }
-    else {
-        const header = document.querySelector('#header');
-        const footer = document.querySelector('#footer');
-        return divFullScreen.offsetHeight + BUTTON_FULLSCREEN_MARGIN_PX + 
-               header.offsetHeight + footer.offsetHeight + FOOTER_MARGIN_PX * 2;
-    }
+    const header = document.querySelector('#header');
+    const title = document.querySelector('#title');
+    const footer = document.querySelector('#footer');
+    
+    const MISSING_HEIGHT = 15; // where is this coming from?
+    return divFullScreen.offsetHeight + BUTTON_FULLSCREEN_MARGIN_PX + 
+           header.offsetHeight - title.offsetHeight + footer.offsetHeight + FOOTER_MARGIN_PX * 2 + MISSING_HEIGHT;
 }
 
 function getGridSizePx() {
@@ -199,8 +200,7 @@ function resizeWindow() {
     gridWidthPx = getGridSizePx();
     gridContainer.style.width = gridWidthPx + 'px';
     gridContainer.style.height = gridWidthPx + 'px';
-    controls1.style.width = gridWidthPx + GRID_BORDER_PX * 2 + 'px';
-    controls2.style.width = controls1.style.width;
+    controls.style.width = gridWidthPx + GRID_BORDER_PX * 2 + 'px';
 
     if (!fullScreen) {
         const hseparators = document.querySelectorAll('.hseparator');
@@ -384,9 +384,9 @@ function updateCell(e) {
 function goFullScreen() {
     fullScreen = !fullScreen;
     
-    const header = document.querySelector('#header');
-    header.style.visibility = (fullScreen) ? 'hidden' : 'visible';
-    header.style.height = (fullScreen) ? '0' : 'auto';
+    const controls = document.querySelector('#controls');
+    controls.style.visibility = (fullScreen) ? 'hidden' : 'visible';
+    controls.style.height = (fullScreen) ? '0' : 'auto';
     
     const footer = document.querySelector('#footer');
     footer.style.visibility = (fullScreen) ? 'hidden' : 'visible';
