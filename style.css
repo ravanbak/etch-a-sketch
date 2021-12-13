@@ -74,7 +74,7 @@ body {
 }
 
 #controls1 {
-    margin: 4px auto;
+    margin: 0 auto;
 }
 
 #controls2 {
@@ -157,11 +157,13 @@ body {
 #footer {
     display: flex;
     justify-content: center;
-    width: 230px;
+    align-items: center;
+    width: 300px;
 }
 
 #copyright {
     padding-top: 4px;
+    margin: 0 30px;
     border-top: 1px solid rgb(100, 100, 100, 0.2);
 }
 
